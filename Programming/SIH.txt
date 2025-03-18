@@ -1,0 +1,11 @@
+concept of datatypes
+variable
+3 assignment
+4 numerical types
+5 operators and expressions
+6 control structure
+7 string manipulation
+8 list
+9 tuple
+10 dictionaries
+11 functions

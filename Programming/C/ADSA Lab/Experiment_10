@@ -1,0 +1,106 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define TABLE_SIZE 100
+struct KeyValue {
+char key[50];
+char value[50];
+struct KeyValue* next;
+};
+struct HashTable {
+struct KeyValue* table[TABLE_SIZE];
+} HashTable;
+unsigned int hash(const char* key) {
+unsigned long int hashval = 0;
+for (int i = 0; key[i] != '\0'; i++) {
+hashval = (hashval << 5) + key[i];
+}
+return hashval % TABLE_SIZE;
+}
+struct HashTable* createHashTable() {
+struct HashTable* ht = (struct HashTable*)malloc(sizeof(struct HashTable));
+for (int i = 0; i < TABLE_SIZE; i++) {
+ht->table[i] = NULL;
+}
+return ht;
+}
+void insert(struct HashTable* ht, const char* key, const char* value) {
+unsigned int index = hash(key);
+struct KeyValue* newEntry = (struct KeyValue*)malloc(sizeof(struct KeyValue));
+strcpy(newEntry->key, key);
+strcpy(newEntry->value, value);
+newEntry->next = NULL;
+if (ht->table[index] == NULL) {
+ht->table[index] = newEntry;
+}
+else {
+struct KeyValue* current = ht->table[index];
+while (current->next != NULL) {
+if (strcmp(current->key, key) == 0) {
+strcpy(current->value, value);
+free(newEntry);
+return;
+}
+current = current->next;
+}
+current->next = newEntry;
+}
+}
+const char* search(struct HashTable* ht, const char* key) {
+unsigned int index = hash(key);
+struct KeyValue* current = ht->table[index];
+while (current != NULL) {
+if (strcmp(current->key, key) == 0) {
+return current->value;
+}
+current = current->next;
+}
+return NULL;
+}
+void delete(struct HashTable* ht, const char* key) {
+unsigned int index = hash(key);
+struct KeyValue* current = ht->table[index];
+struct KeyValue* prev = NULL;
+while (current != NULL) {
+if (strcmp(current->key, key) == 0) {
+if (prev == NULL) {
+// Removing the first entry in the chain
+ht->table[index] = current->next;
+} else {
+// Bypass the current entry
+prev->next = current->next;
+}
+free(current);
+return;
+}
+prev = current;
+current = current->next;
+}
+printf("Key not found: %s\n", key);
+}
+void freeHashTable(struct HashTable* ht) {
+for (int i = 0; i < TABLE_SIZE; i++) {
+struct KeyValue* current = ht->table[i];
+while (current != NULL) {
+struct KeyValue* toDelete = current;
+current = current->next;
+free(toDelete);
+}
+}
+free(ht);
+}
+int main() {
+struct HashTable* ht = createHashTable();
+insert(ht, "name", "Mayank Srivastava");
+insert(ht, "age", "20");
+insert(ht, "city", "New Delhi");
+printf("Searching for 'name': %s\n", search(ht, "name"));
+printf("Searching for 'age': %s\n", search(ht, "age"));
+printf("Searching for 'city': %s\n", search(ht, "city"));
+insert(ht, "age", "21");
+printf("Updated age: %s\n", search(ht, "age"));
+delete(ht, "city");
+printf("Searching for 'city' after deletion: %s\n", search(ht, "city"));
+freeHashTable(ht);
+return 0;
+}
